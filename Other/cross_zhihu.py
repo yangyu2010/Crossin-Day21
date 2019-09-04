@@ -5,10 +5,7 @@
 @Github: https://github.com/yangyu2010
 @Date: 2019-09-03 17:25:18
 @LastEditors: YangYu
-@LastEditTime: 2019-09-04 15:05:13
-'''
-'''
-爬取某个知乎专栏
+@LastEditTime: 2019-09-04 12:28:16
 '''
 
 import requests
@@ -45,8 +42,10 @@ def get_zhihu_data() -> list:
             if resp.status_code != 200:
                 print('get data status_code error')
                 break
+
             j = resp.json()
             data = j['data']
+
             for article in data:
                 print(article.get('id'), article.get('title')) 
                 info = {
@@ -60,10 +59,9 @@ def get_zhihu_data() -> list:
                 break
             url = paging['next']
             url = url.replace('zhuanlan.zhihu.com', 'zhuanlan.zhihu.com/api')
+
         time.sleep(2)
 
-        # 我只抓取第一页数据, 如要抓取所有, 注释掉break
-        break
     return array_list
 
 
@@ -101,8 +99,7 @@ def cover_html_to_pdf():
     print(all_html_list)
 
     pdfkit.from_file(all_html_list, 'cross_zhihu.pdf')
-    
-
+    # pdfkit.from_file()
     
 # l = get_zhihu_data()
 # save_data_html(l)
