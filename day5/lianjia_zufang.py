@@ -5,7 +5,7 @@
 @Github: https://github.com/yangyu2010
 @Date: 2019-09-04 15:32:37
 @LastEditors: YangYu
-@LastEditTime: 2019-09-04 18:56:50
+@LastEditTime: 2019-09-05 15:42:49
 @Desc: 链接租房信息爬取
 '''
 
@@ -25,56 +25,67 @@ headers = {'cookie': cookie, 'User-Agent': user_Agent}
 
 # csv文件先写入默认行 用w覆盖
 def config_default_csv():
-    with open(CSV_FILE_PATH,"w") as csvfile:
+    with open(CSV_FILE_PATH, "w", encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(['标题', "标签", '话题评论人数', "话题关注人数", '回复数量', '创建时间', '该回答评论数', '该回答赞同数', '回答'])
+        writer.writerow(['标题', "链接", '详细地址', "房屋面积", '朝向', '房屋格式', '楼层', '价格'])
 config_default_csv()
-
 
 
 # 将数据写入csv
 def save_data_to_csv(info: []):
-    with open(CSV_FILE_PATH,"a+") as csvfile:
+    with open(CSV_FILE_PATH, "a+", encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(info)
         
+# 获取数据
+def get_lianjia_data(url, headers):
+    try:
+        resp = requests.get(url, headers=headers)
+    except:
+        print('get data error')
+        return None
+    else:
+        text = resp.text
+        soup = BeautifulSoup(text, 'html.parser')
+        content_list = soup.find_all('div', {'class': 'content__list--item'})
 
-try:
-    resp = requests.get(url, headers=headers)
-except:
-    print('get data error')
-else:
-    text = resp.text
-    soup = BeautifulSoup(text, 'html.parser')
-    content_list = soup.find_all('div', {'class': 'content__list--item'})
+        item_info_list = []
+        for item in content_list:
+            item_info = []
+            p1 = item.find('p', {'class': 'content__list--item--title twoline'})
+            title = p1.find('a').get_text()
+            url = p1.find('a').get('href')
+            item_info.append(title)
+            item_info.append(url)
 
-    for item in content_list:
-        item_info = []
-        p1 = item.find('p', {'class': 'content__list--item--title twoline'})
-        title = p1.find('a').get_text()
-        url = p1.find('a').get('href')
-        item_info.append(title)
-        item_info.append(url)
+            p2 = item.find('p', {'class': 'content__list--item--des'})
+            text_list = p2.text.split()
+            address = text_list.pop(0)
+            space = text_list[1]
+            direction = text_list[2][1:]
+            structure = text_list[4]
+            level = text_list[6] + text_list[7]
+            # print(address, space, direction, structure, level)
+            item_info.append(address)
+            item_info.append(space)
+            item_info.append(direction)
+            item_info.append(structure)
+            item_info.append(level)
 
-        p2 = item.find('p', {'class': 'content__list--item--des'})
-        text_list = p2.text.split()
-        address = text_list.pop(0)
-        space = text_list[1]
-        direction = text_list[2][1:]
-        structure = text_list[4]
-        level = text_list[6] + text_list[7]
-        # print(address, space, direction, structure, level)
-        item_info.append(address)
-        item_info.append(space)
-        item_info.append(direction)
-        item_info.append(structure)
-        item_info.append(level)
-        item_info.append(address)
+            span = item.find('span', {'class': 'content__list--item-price'})
+            print(span)
+            price = span.get_text()
+            item_info.append(price)
 
-        span = item.find('span', {'class': 'content__list--item-price'})
-        print(span)
-        price = span.get_text()
-        item_info.append(price)
+            item_info_list.append(item_info)
+        return item_info_list
 
-        save_data_to_csv(item_info)
 
+def run():
+    config_default_csv()
+    item_info_list = get_lianjia_data(url, headers)
+    for item in item_info_list:
+        save_data_to_csv(item)
+
+
+run()
