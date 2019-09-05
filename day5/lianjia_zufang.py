@@ -5,8 +5,8 @@
 @Github: https://github.com/yangyu2010
 @Date: 2019-09-04 15:32:37
 @LastEditors: YangYu
-@LastEditTime: 2019-09-05 15:42:49
-@Desc: 链接租房信息爬取
+@LastEditTime: 2019-09-05 17:43:03
+@Desc: 链家租房信息爬取
 '''
 
 from bs4 import BeautifulSoup
